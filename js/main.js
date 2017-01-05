@@ -105,7 +105,7 @@ function saveGame(){
 function loadGame(){
 	var savedData = JSON.parse(localStorage.getItem("savedData"));
 	if(savedData == null){
-		deleteSave();
+		deleteGameData();
 		console.log("No Save Detected");
 	} else {
 		gameData = savedData;
