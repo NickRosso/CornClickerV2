@@ -9,10 +9,10 @@ function preload(){
 	game.load.image('upgradecornclick', 'assets/upgradebutton.png');
 	game.load.image('cornkernel', 'assets/kernels.png');
 	game.load.image('deletesave', 'assets/deleteSave.png')
-	loadGame();
 }
 
 function create(){
+	loadGame();
 	game.stage.backgroundColor = '#e7ea73';
 	game.stage.disableVisibilityChange = true;
 	game.physics.startSystem(Phaser.Physics.Arcade)
@@ -96,8 +96,8 @@ function saveGame(){
 function loadGame(){
 	var savedData = JSON.parse(localStorage.getItem("savedData"));
 	if(savedData == null){
-		deleteGameData();
 		console.log("No Save Detected");
+		deleteGameData();
 	} else {
 		gameData = savedData;
 	}
@@ -113,11 +113,5 @@ function deleteGameData(){
 		upgradeCornRateCost: 25
 	}
 	localStorage.setItem("savedData", JSON.stringify(gameData));
-	console.log("Save Deleted");
-	cornRateLevelCostText.text = 'Cost: ' + gameData.upgradeCornRateCost;
-	cornRateLevelText.text = 'Corn Per Second: ' + gameData.cornGainRateLevel;
-	totalCornText.text = 'Corn: ' + gameData.totalCorn;
-	clickLevelCostText.text = 'Cost: ' + gameData.upgradeClickCost;
-	clickLevelText.text = 'Corn Per Click: ' + gameData.cornClickLevel;
-
+	console.log("Save Formatted");
 }
