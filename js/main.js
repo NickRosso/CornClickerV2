@@ -3,15 +3,6 @@ var style = { font: 'Nueva Std', fontSize: '60px', fill: '#e7ea73'};
 var buttonStyle = {font: 'Nueva Std', fontSize: '32px', fill: '#159146'};
 
 
-/*var gameData = {
-	totalCorn: 0,
-	cornClickLevel: 1,
-	upgradeClickCost: 10,
-	cornGainRateLevel: 1,
-	upgradeCornRateCost: 25
-
-}
-*/
 function preload(){
 	game.load.image('background', 'assets/cornfieldbackground.png');
 	game.load.image('cornclick', 'assets/clickbutton.png');
@@ -39,11 +30,11 @@ function create(){
 	clickLevelCostText = game.add.text(game.world.centerX - 300, game.world.centerY + 90, 'Cost: ' + gameData.upgradeClickCost, buttonStyle);
 
 	cornRateLevelInfoText = game.add.text(game.world.centerX + 50, game.world.centerY + 40, '+ Corn Per Second', buttonStyle);
-	cornRateLevelText = game.add.text(game.world.centerX + 10, game.world.centerY + 65, 'Corn Per Second: ' + gameData.cornClickLevel, buttonStyle);
+	cornRateLevelText = game.add.text(game.world.centerX + 10, game.world.centerY + 65, 'Corn Per Second: ' + gameData.cornGainRateLevel, buttonStyle);
 	cornRateLevelCostText = game.add.text(game.world.centerX + 10, game.world.centerY + 90,'Cost: '+ gameData.upgradeCornRateCost, buttonStyle);
 
 	game.time.events.loop(Phaser.Timer.SECOND, cornGainRate, this);
-	game.time.events.loop(Phaser.Timer.SECOND * 5, renderCorn, this);
+	game.time.events.loop(Phaser.Timer.SECOND * 2, renderCorn, this);
 	game.time.events.loop(Phaser.Timer.SECOND, saveGame,this);
 }
 
