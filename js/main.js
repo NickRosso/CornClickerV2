@@ -4,12 +4,14 @@ var buttonStyle = {font: 'Nueva Std', fontSize: '28px', fill: '#FFFFFF'};
 
 function preload(){
 	game.load.image('background', 'assets/cornfieldbackground.png');
-	game.load.image('cornclick', 'assets/clickbutton.png');
+	game.load.spritesheet('cornclick', 'assets/clickbutton.png',275,85);
 	game.load.image('ground', 'assets/platform.png');
-	game.load.image('upgradecornclick', 'assets/upgradebutton.png');
+	game.load.spritesheet('upgradecornclick', 'assets/upgradebutton.png',310, 144);
+	game.load.spritesheet('upgradecornrate', 'assets/upgradebuttonright.png',310,144);
+
 	game.load.image('cornkernel', 'assets/kernels.png');
+	game.load.image('goldenkernel', 'assets/goldenkernel.png');
 	game.load.image('deletesave', 'assets/deleteSave.png');
-	game.load.image('upgradecornrate', 'assets/upgradebuttonright.png');
 }
 
 function create(){
@@ -28,7 +30,7 @@ function create(){
 	cornDrawLimit.scale.setTo(2,2);
 	cornDrawLimit.body.immovable = true;
 
-	cornClick = game.add.button(game.world.centerX - 160, game.world.centerY + 150, 'cornclick', generateCorn, this, 2,1,0);
+	cornClick = game.add.button(game.world.centerX - 140, game.world.centerY + 130, 'cornclick', generateCorn, this, 2,1,0);
 	upgradeClick = game.add.button(game.world.centerX - 320, game.world.centerY + 230, 'upgradecornclick', upgradeClickLevel, this, 2, 1, 0);
 	upgradeCornRate = game.add.button(game.world.centerX , game.world.centerY + 230, 'upgradecornrate', upgradeCornGainRate, this, 2, 1, 0);
 	deleteSaveButton = game.add.button(0, game.world.height - 65, 'deletesave', initGameData , this, 2, 1, 0);
@@ -47,7 +49,9 @@ function create(){
 
 	game.time.events.loop(Phaser.Timer.SECOND, renderCorn, this);
 	game.time.events.loop(Phaser.Timer.SECOND, saveGame, this);
-	game.time.events.loop(Phaser.Timer.SECOND / 5, updateButtonDetails, this)
+	game.time.events.loop(Phaser.Timer.SECOND / 5, updateButtonDetails, this);
+	game.time.events.loop(Phaser.Timer.SECOND * (Math.random() * 40) , spawnGoldenCorn,this);
+
 }
 
 function update(){
@@ -64,7 +68,7 @@ function generateCorn() {
 function upgradeClickLevel(){
 	if(gameData.totalCorn >= gameData.upgradeClickCost){
 		gameData.cornPerClickLevel++;
-		gameData.cornPerClick++;
+		gameData.cornPerClick+= Math.round(Math.floor(1 * Math.pow(1.1,gameData.cornPerClickLevel)));
 		gameData.totalCorn -= gameData.upgradeClickCost;
 		gameData.upgradeClickCost = Math.floor(10 * Math.pow(1.5, gameData.cornPerClickLevel));
 		if(gameData.cornPerClickLevel % 25 == 0)
@@ -75,31 +79,10 @@ function upgradeClickLevel(){
 function upgradeCornGainRate(){
 	if(gameData.totalCorn >= gameData.upgradeCornRateCost){
 		gameData.cornGainRateLevel++;
-		gameData.cornGainRate+= CPSLevelModifier(gameData.cornGainRateLevel);
+		gameData.cornGainRate+= Math.round(Math.floor(1 * Math.pow(1.2,gameData.cornGainRateLevel)));
 		gameData.totalCorn -= gameData.upgradeCornRateCost;
 		gameData.upgradeCornRateCost = Math.floor(25 * Math.pow(1.5, gameData.cornGainRateLevel));
-
 	}
-}
-
-function CPSLevelModifier(level){
-	var rate;
-	switch(true){
-		case (level <= 10):
-			rate = 1;
-			break;
-		case (level > 10 && level <= 20):
-			rate = 5;
-			break;
-		case (level > 20 && level <= 30):
-			rate = 15;
-			break;
-		case( level > 30 ):
-			rate = 20;
-			break;
-
-	}
-	return rate;
 }
 
 function renderCorn(){
@@ -120,12 +103,22 @@ function saveGame(){
 function loadGame(){
 	var savedData = JSON.parse(localStorage.getItem("savedData"));
 	
-	if(localStorage.getItem("savedData") == null || savedData.upgradeClickCost === "undefined"){
+	if(localStorage.getItem("savedData") == null || savedData.offlineProgressionModifiers === "undefined"){
 		console.log("No Save Detected");
 		initGameData();
 	}
 	else {
-		gameData = savedData;
+		gameData = {
+			totalCorn: savedData.totalCorn,
+
+			cornPerClickLevel: savedData.cornPerClickLevel,
+			cornPerClick: savedData.cornPerClick,
+			upgradeClickCost: savedData.upgradeClickCost,
+			cornGainRateLevel: savedData.cornGainRateLevel,
+			cornGainRate: savedData.cornGainRate,
+			upgradeCornRateCost: savedData.upgradeCornRateCost,
+			onlineTime: Math.round(new Date() / 1000)
+		}
 		offlineProgression();
 	}
 }
@@ -174,4 +167,17 @@ function offlineProgression(){
 	var offlineGains = timeSinceLastPlayed * gameData.cornGainRate;
 	gameData.totalCorn += offlineGains;
 	console.log("Corn gained since last offline " + offlineGains);
+}
+
+function spawnGoldenCorn(){
+	var goldCornImage = fallingCorn.create(Math.random() * window.innerWidth, -50, 'goldenkernel');
+	goldCornImage.body.gravity.y = Math.random() * 100 + 50;
+	goldCornImage.inputEnabled = true;
+	goldCornImage.events.onInputDown.add(goldCornReward,this);
+
+}
+function goldCornReward(goldCornImage){
+	var reward = (gameData.cornGainRate + gameData.cornPerClick) * 1000;
+	gameData.totalCorn += reward;
+	goldCornImage.kill();
 }
